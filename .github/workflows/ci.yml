@@ -34,5 +34,17 @@ jobs:
           password : ${{ secrets.DOCKERHUB_TOKEN }}
       - name : push docker img
         run : docker push ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
+      - name : deploy to ec2
+        uses : appleboy/ssh-action@v1.2.2
+        with :
+          host : ${{ secrets.EC2_HOST }}
+          username : ${{ secrets.EC2_USER }}
+          key : ${{ secrets.EC2_SSH_KEY }}
+          script : |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
+            sudo docker stop react-app
+            sudo docker rm react-app
+            sudo docker run -d -name react-app -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
+          
       
         
