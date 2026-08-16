@@ -55,12 +55,30 @@ jobs:
           username : ${{ secrets.EC2_USER }}
           key : ${{ secrets.EC2_SSH_KEY }}
           script : |
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:${{ github.sha }}
+
+            curr_img=$(sudo docker inspect react-app --format '{{.Config.Image}}' 2> /dev/null || true)
+            img=${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:${{ github.sha }}
+
+            sudo docker pull $img
             sudo docker stop react-app || true
             sudo docker rm react-app || true
-            sudo docker run -d --name react-app -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:${{ github.sha }}
+            sudo docker run -d --name react-app -p 80:80 $img
             sleep 5
-            curl -f http://localhost
+            if curl -f http://localhost; then
+              echo "success"
+            else
+              echo "failed"
+              if [ -n "$curr_img" ]; then
+                sudo docker stop react-app || true
+                sudo docker rm react-app || true
+                sudo docker pull $curr_img
+                sudo docker run -d --name react-app -p 80:80 $curr_img
+              else 
+                echo "no image found"
+                exit 1
+              fi
+            fi
+
           
       
         
