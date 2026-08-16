@@ -15,14 +15,6 @@ jobs:
           node-version: 24
       - name : install dependencies
         run : npm ci
-      - name: Check Docker username secret
-        run: |
-          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
-          echo "❌ DOCKER_USERNAME is EMPTY"
-          exit 1
-          else
-          echo "✅ DOCKER_USERNAME is configured"
-          fi
       - name : build app
         run : npm run build
       - name : build docker img
@@ -42,8 +34,8 @@ jobs:
           key : ${{ secrets.EC2_SSH_KEY }}
           script : |
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
-            sudo docker stop react-app
-            sudo docker rm react-app
+            sudo docker stop react-app || true
+            sudo docker rm react-app || true
             sudo docker run -d --name react-app -p 80:80 ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
           
       
