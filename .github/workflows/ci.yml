@@ -15,6 +15,14 @@ jobs:
           node-version: 24
       - name : install dependencies
         run : npm ci
+      - name: Check Docker username secret
+        run: |
+          if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+          echo "❌ DOCKER_USERNAME is EMPTY"
+          exit 1
+          else
+          echo "✅ DOCKER_USERNAME is configured"
+          fi
       - name : build app
         run : npm run build
       - name : build docker img
