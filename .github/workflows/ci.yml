@@ -17,17 +17,7 @@ jobs:
         run : npm ci
       - name : build app
         run : npm run build
-      - name: Inspect runner
-        run: |
-            echo "Current directory:"
-            pwd
-        
-            echo "Files:"
-            ls -la
-        
-            echo "Node version:"
-            node --version
-        
-            echo "NPM version:"
-            npm --version
+      - name : build docker img
+        run : docker build -t react-ci-cd:v1 .
+      
         
