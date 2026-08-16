@@ -17,6 +17,24 @@ jobs:
         run : npm ci
       - name : build app
         run : npm run build
+      - name : upload artifact
+        uses : actions/upload-artifact@v4
+        with : 
+          name : react-build
+          path : dist/
+
+
+  docker:
+    needs : build
+    runs-on: ubuntu-latest
+    steps:
+      - name : checkout code
+        uses : actions/checkout@v5
+      - name : download artifact
+        uses : actions/download-artifact@v5  
+        with :
+          name : react-build
+          path : dist/    
       - name : build docker img
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1 .
       - name : docker login
@@ -26,6 +44,10 @@ jobs:
           password : ${{ secrets.DOCKERHUB_TOKEN }}
       - name : push docker img
         run : docker push ${{ secrets.DOCKERHUB_USERNAME }}/react-ci-cd:v1
+  deploy:
+    needs : docker
+    runs-on: ubuntu-latest
+    steps:
       - name : deploy to ec2
         uses : appleboy/ssh-action@v1.2.2
         with :
